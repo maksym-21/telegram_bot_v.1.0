@@ -1,0 +1,130 @@
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+
+public class Bot extends TelegramLongPollingBot {
+    public String getBotUsername() {
+        return "AwesomeOwnHelper_bot";
+    }
+
+    // returns a http api which was given by Telegram
+    // (secure -> do not tell anyone)
+    public String getBotToken() {
+        try {
+            Properties properties = new Properties();
+            FileInputStream fileStream = new FileInputStream("src\\main\\resources\\config.properties");
+            properties.load(fileStream);
+            return String.valueOf(properties.get("my_token"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return e.getMessage();
+        }
+    }
+
+    // a method which adds a keyboard under text panel
+    public void setButton(SendMessage sendMessage) {
+        // add comments............
+        // init of keyboard
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+
+        // setting a markup
+        sendMessage.setReplyMarkup(keyboardMarkup);
+
+        //
+        keyboardMarkup.setSelective(true);
+
+        // adjust a scale to the number of buttons
+        keyboardMarkup.setResizeKeyboard(true);
+
+        // hide a keyboard after using a button
+        keyboardMarkup.setOneTimeKeyboard(false);
+
+        List<KeyboardRow> keyboardRowList = new ArrayList<>();
+        KeyboardRow firstRow = new KeyboardRow();
+
+        firstRow.add(new KeyboardButton("/help"));
+        firstRow.add(new KeyboardButton("/settings "));
+
+        keyboardRowList.add(firstRow);
+        keyboardMarkup.setKeyboard(keyboardRowList);
+    }
+
+    // a method for sending responds on user's action
+    public void sendMsg(Message message, String input) {
+        SendMessage sendMessage = new SendMessage();
+
+        // with markdown there will be an Exception
+        // sendMessage.enableMarkdown(true);
+
+        // setting a chat and relevant message id on which we should respond
+        sendMessage.setChatId(message.getChatId().toString());
+        sendMessage.setReplyToMessageId(message.getMessageId());
+
+        sendMessage.setText(input);
+
+        // trying to send our response
+        try {
+            // setting of keyboard , then execute message
+            setButton(sendMessage);
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // a method which reacts on updates
+    public void onUpdateReceived(Update update) {
+        Message message = update.getMessage();
+        Model model = new Model();
+        if (message != null && message.hasText()) {
+            switch (message.getText()) {
+                case "/help":
+                    sendMsg(message, "This " + Emoji.BOT + " tells you a current forecast of\n " +
+                            "weather in city, which you ask" + Emoji.SUNNY + Emoji.UMBRELLA );
+                    break;
+                case "/settings":
+                    sendMsg(message,"What will we customize" + Emoji.QUESTION_MARK);
+                    break;
+                default:
+                    try {
+                        // if input doesn't contain a digit or is not a digit then process
+                        if (!message.getText().matches(".*\\d.*")) {
+                            sendMsg(message, Weather.getWeather(message.getText(), model));
+                        }
+                        else throw new IOException("Incorrect input!");
+                    } catch (IOException e) {
+                        sendMsg(message,"City was not found" + Emoji.GREY_EXCLAMATION + "\nPlease try again");
+                    }
+                    break;
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            // creating an object of api
+            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
+
+            // instance of bot
+            Bot bot = new Bot();
+
+            //then register our bot
+            telegramBotsApi.registerBot(bot);
+        } catch (TelegramApiException exception) {
+            exception.getStackTrace();
+        }
+    }
+}
