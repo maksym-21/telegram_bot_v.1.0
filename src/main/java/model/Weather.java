@@ -1,3 +1,7 @@
+package model;
+
+import model.Emoji;
+import model.Model;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -9,7 +13,7 @@ import java.util.Properties;
 import java.util.Scanner;
 
 public class Weather {
-    public static String getWeather(String city,Model model) throws IOException {
+    public static String getWeather(String city, Model model) throws IOException {
         // secure -> weather api
         // example -> https://samples.openweathermap.org/data/2.5/weather?q=London&appid=secure_weather_api
         Properties properties = new Properties();

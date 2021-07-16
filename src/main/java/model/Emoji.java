@@ -1,3 +1,5 @@
+package model;
+
 import com.vdurmont.emoji.EmojiParser;
 
 public class Emoji {

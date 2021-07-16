@@ -1,3 +1,5 @@
+package model;
+
 public class Model {
     private String cityName;
     private String description;

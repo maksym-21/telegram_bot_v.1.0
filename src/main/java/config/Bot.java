@@ -1,5 +1,6 @@
+package config;
+
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -7,12 +8,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import model.*;
 
 
 public class Bot extends TelegramLongPollingBot {
@@ -25,18 +26,21 @@ public class Bot extends TelegramLongPollingBot {
     public String getBotToken() {
         try {
             Properties properties = new Properties();
+
             FileInputStream fileStream = new FileInputStream("src\\main\\resources\\config.properties");
+
             properties.load(fileStream);
+
             return String.valueOf(properties.get("my_token"));
         } catch (IOException e) {
             e.printStackTrace();
+
             return e.getMessage();
         }
     }
 
     // a method which adds a keyboard under text panel
     public void setButton(SendMessage sendMessage) {
-        // add comments............
         // init of keyboard
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
 
@@ -65,9 +69,6 @@ public class Bot extends TelegramLongPollingBot {
     // a method for sending responds on user's action
     public void sendMsg(Message message, String input) {
         SendMessage sendMessage = new SendMessage();
-
-        // with markdown there will be an Exception
-        // sendMessage.enableMarkdown(true);
 
         // setting a chat and relevant message id on which we should respond
         sendMessage.setChatId(message.getChatId().toString());
@@ -113,18 +114,5 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public static void main(String[] args) {
-        try {
-            // creating an object of api
-            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
 
-            // instance of bot
-            Bot bot = new Bot();
-
-            //then register our bot
-            telegramBotsApi.registerBot(bot);
-        } catch (TelegramApiException exception) {
-            exception.getStackTrace();
-        }
-    }
 }
