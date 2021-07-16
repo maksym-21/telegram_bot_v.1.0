@@ -34,7 +34,9 @@ public class Bot extends TelegramLongPollingBot {
         return PropertiesHandler.getStringFromProperty("my_token");
     }
 
-    // a method which adds a keyboard under text panel
+    /**
+     * a method which adds a keyboard under text panel
+     */
     public void setButton(SendMessage sendMessage) {
         // init of keyboard
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
@@ -61,7 +63,9 @@ public class Bot extends TelegramLongPollingBot {
         keyboardMarkup.setKeyboard(keyboardRowList);
     }
 
-    // a method for sending responds on user's action
+    /**
+     * a method for sending responds on user's action
+     */
     public void sendMsg(Message message, String input) {
         SendMessage sendMessage = new SendMessage();
 
@@ -81,7 +85,9 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    // a method which reacts on updates
+    /**
+     * a method which reacts on updates
+     */
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
 
@@ -110,6 +116,4 @@ public class Bot extends TelegramLongPollingBot {
             }
         }
     }
-
-
 }
