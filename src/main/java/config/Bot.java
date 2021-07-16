@@ -1,5 +1,6 @@
 package config;
 
+import handlers.PropertiesHandler;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -12,31 +13,25 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+
 import model.*;
 
 
 public class Bot extends TelegramLongPollingBot {
+
+    /**
+     * @return username of bot
+     */
     public String getBotUsername() {
-        return "AwesomeOwnHelper_bot";
+        return PropertiesHandler.getStringFromProperty("my_bot_username");
     }
 
-    // returns a http api which was given by Telegram
-    // (secure -> do not tell anyone)
+    /** api is secure -> do not tell anyone
+     *
+     * @return http api which was given by Telegram
+     */
     public String getBotToken() {
-        try {
-            Properties properties = new Properties();
-
-            FileInputStream fileStream = new FileInputStream("src\\main\\resources\\config.properties");
-
-            properties.load(fileStream);
-
-            return String.valueOf(properties.get("my_token"));
-        } catch (IOException e) {
-            e.printStackTrace();
-
-            return e.getMessage();
-        }
+        return PropertiesHandler.getStringFromProperty("my_token");
     }
 
     // a method which adds a keyboard under text panel
@@ -89,7 +84,9 @@ public class Bot extends TelegramLongPollingBot {
     // a method which reacts on updates
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
+
         Model model = new Model();
+
         if (message != null && message.hasText()) {
             switch (message.getText()) {
                 case "/help":
