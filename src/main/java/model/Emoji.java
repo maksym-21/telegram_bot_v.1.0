@@ -15,12 +15,16 @@ public class Emoji {
      *  this option we use in project.
      */
 
-    public final static String QUESTION_MARK = EmojiParser.parseToUnicode(":question:");
     public final static String GREY_EXCLAMATION = EmojiParser.parseToUnicode(":grey_exclamation:");
     public final static String PUSHPIN = EmojiParser.parseToUnicode(":pushpin:");
     public final static String BOT = EmojiParser.parseToUnicode(":robot_face:");
     public final static String UMBRELLA = EmojiParser.parseToUnicode(":closed_umbrella:");
     public final static String SUNNY = EmojiParser.parseToUnicode(":sunny:");
+    public final static String VIDEO_GAME = EmojiParser.parseToUnicode(":video_game:");
+    public final static String MAIL_BOX = EmojiParser.parseToUnicode(":mailbox:");
+    public final static String ROCKET = EmojiParser.parseToUnicode(":rocket:");
+    public final static String CITYSCAPE = EmojiParser.parseToUnicode(":cityscape:");
+
 
     public static String getFlagByCountryIndex(String input){
         return EmojiParser.parseToUnicode(":" + input.toLowerCase() + ":");
