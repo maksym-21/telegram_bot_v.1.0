@@ -4,15 +4,15 @@ import com.vdurmont.emoji.EmojiParser;
 
 public class Emoji {
 
-    /*
-       There are 2 ways of creating an emoji here:
-       1 -> to use a unicode in string
-            f.e ->  "Hello \u26BD"
-            all unicode symbols are here -> https://apps.timwhitlock.info/emoji/tables/unicode
-            U+26BD -> \u26BD
-
-       2 -> to use a library EmojiParser due adding a dependency emoji-java in pom.xml
-            (used in my project)
+    /**
+     *There are 2 ways of creating an emoji here:
+     * 1 -> to use a unicode in string
+     *  f.e ->  "Hello \u26BD"
+     *  all unicode symbols are here -> https://apps.timwhitlock.info/emoji/tables/unicode
+     *  U+26BD -> \u26BD
+     *
+     * 2 -> to use a library EmojiParser due adding a dependency emoji-java in pom.xml
+     *  this option we use in project.
      */
 
     public final static String QUESTION_MARK = EmojiParser.parseToUnicode(":question:");
@@ -25,7 +25,4 @@ public class Emoji {
     public static String getFlagByCountryIndex(String input){
         return EmojiParser.parseToUnicode(":" + input.toLowerCase() + ":");
     }
-
-
-
 }

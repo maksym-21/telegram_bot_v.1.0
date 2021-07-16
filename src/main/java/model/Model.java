@@ -1,5 +1,8 @@
 package model;
 
+import lombok.Setter;
+
+@Setter
 public class Model {
     private String cityName;
     private String description;
@@ -10,31 +13,6 @@ public class Model {
     private Number pressure;
 
     private final String push = Emoji.PUSHPIN;
-
-    public void setPressure(Number pressure) {
-        this.pressure = pressure;
-    }
-
-    public void setTemperature(Number temperature) {
-        this.temperature = temperature;
-    }
-
-    public void setHumidity(Number humidity) {
-        this.humidity = humidity;
-    }
-
-
-    public void setMainForecast(String mainForecast) {
-        this.mainForecast = mainForecast.toLowerCase();
-    }
-
-    public void setDescription(String description) {
-        this.description = description.toLowerCase();
-    }
-
-    public void setCityName(String cityName) {
-        this.cityName = cityName;
-    }
 
     public void setMinmax(Number min, Number max) {
         this.minmax = "\n(min = " + min + " C*, max = " + max + " C*)";
