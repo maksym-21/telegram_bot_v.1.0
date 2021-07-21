@@ -24,6 +24,10 @@ public class Emoji {
     public final static String MAIL_BOX = EmojiParser.parseToUnicode(":mailbox:");
     public final static String ROCKET = EmojiParser.parseToUnicode(":rocket:");
     public final static String CITYSCAPE = EmojiParser.parseToUnicode(":cityscape:");
+    public final static String SNAKE = EmojiParser.parseToUnicode(":snake:");
+    public final static String DINOSAUR = EmojiParser.parseToUnicode(":turtle:");
+    public final static String TIC_TAC = EmojiParser.parseToUnicode(":o:");
+    public final static String TRIDENT = EmojiParser.parseToUnicode(":trident:");
 
 
     public static String getFlagByCountryIndex(String input){

@@ -3,7 +3,7 @@ package model;
 import lombok.Setter;
 
 @Setter
-public class Model {
+public class WeatherModel {
     private String cityName;
     private String description;
     private String minmax;

@@ -1,12 +1,8 @@
 package handlers;
 
-import state.Handler;
-
-public class NewsWantedHandler implements Handler {
-
+public class NewsWantedHandler implements state.Handler {
     @Override
     public String handle() {
-        return null;
+        return new NotImplememtedHandler().handle();
     }
-
 }

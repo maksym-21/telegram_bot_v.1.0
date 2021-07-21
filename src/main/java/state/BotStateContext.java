@@ -32,6 +32,15 @@ public class BotStateContext {
         return botStateContext;
     }
 
+    public void checkIfStateIsFinished(){
+        if (currentState==BotStates.NOT_IMPLEMENTED ||
+            currentState==BotStates.FAQ_WANTED ||
+            currentState==BotStates.GAMES_DONE ||
+            currentState==BotStates.WEATHER_DONE ||
+            currentState==BotStates.NEWS_DONE)
+                currentState = BotStates.INITIAL;
+    }
+
     public String chooseHandlerForActualState(){
         return navigator.get(currentState).handle();
     }
