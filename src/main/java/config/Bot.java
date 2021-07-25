@@ -4,6 +4,8 @@ import handlers.PropertiesHandler;
 import model.Emoji;
 import model.WeatherModel;
 import model.Weather;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.*;
@@ -22,6 +24,8 @@ import java.util.List;
 
 
 public class Bot extends TelegramLongPollingBot {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TelegramLongPollingBot.class);
 
     /**
      * a method which adds a keyboard under text panel
@@ -67,7 +71,12 @@ public class Bot extends TelegramLongPollingBot {
         sendMessage.setChatId(message.getChatId().toString());
         sendMessage.setReplyToMessageId(message.getMessageId());
 
+        // for emoji specialized due to problem with "_"
+        sendMessage.enableHtml(true);
+
         sendMessage.setText(input);
+
+        LOG.info("Trying to execute a message reply{}", sendMessage.toString());
 
         // trying to send our response
         try {
@@ -75,12 +84,14 @@ public class Bot extends TelegramLongPollingBot {
             setButton(sendMessage);
             execute(sendMessage);
         } catch (TelegramApiException e) {
+            LOG.error("Exception -> {}", e.getMessage());
+
             e.printStackTrace();
         }
     }
 
+
     /**
-     *
      * @throws TelegramApiException -> bad execution of reply-message
      */
     public void sendMsgWithGameKeyboard(Message message) throws TelegramApiException {
@@ -91,6 +102,9 @@ public class Bot extends TelegramLongPollingBot {
 
         reply.setText("Please choose one : ");
 
+        // for emoji specialized due to problem with "_"
+        reply.enableHtml(true);
+
         setButton(reply);
 
         reply.setReplyMarkup(getInlineMarkup());
@@ -98,8 +112,9 @@ public class Bot extends TelegramLongPollingBot {
         execute(reply);
     }
 
+
     /**
-     * @return Telegram keyboard-message
+     * @return Telegram inline keyboard-message
      */
     public InlineKeyboardMarkup getInlineMarkup(){
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
@@ -111,13 +126,13 @@ public class Bot extends TelegramLongPollingBot {
         InlineKeyboardButton button3 = new InlineKeyboardButton();
         button3.setText("Dinosaur" + Emoji.DINOSAUR);
         InlineKeyboardButton button4 = new InlineKeyboardButton();
-        button4.setText("smth else" + Emoji.TRIDENT);
+        button4.setText("Quiz" + Emoji.TRIDENT);
 
         // every button should have callback data or error
         button1.setCallbackData("Snake");
         button2.setCallbackData("Tic-tac-toe");
         button3.setCallbackData("Dinosaur");
-        button4.setCallbackData("smth else");
+        button4.setCallbackData("Quiz");
 
         List<InlineKeyboardButton> row1 = new ArrayList<>();
         row1.add(button1);
@@ -136,12 +151,14 @@ public class Bot extends TelegramLongPollingBot {
         return inlineKeyboardMarkup;
     }
 
+
     /**
      * @return username of bot
      */
     public String getBotUsername() {
         return PropertiesHandler.getStringFromProperty("my_bot_username");
     }
+
 
     /** api is secure -> do not tell anyone
      * @return http api which was given by Telegram
@@ -152,62 +169,133 @@ public class Bot extends TelegramLongPollingBot {
 
 
     /**
+     * @param callbackQuery -> returned value from inline keyboard
+     * @return -> message reply on user's selected value
+     */
+    public SendMessage processCallbackQuery(CallbackQuery callbackQuery){
+        SendMessage message = new SendMessage();
+        String output;
+
+        if (callbackQuery.getData().contains("Snake")){
+            output = "Sorry game \"Snake\" at the moment is not available";
+        }
+        else if (callbackQuery.getData().contains("Tic-tac-toe")){
+            output = "Sorry game \"Tic-tac-toe\" at the moment is not available";
+        }
+        else if (callbackQuery.getData().contains("Dinosaur")){
+            output = "Sorry game \"Dinosaur\" at the moment is not available";
+        }
+        else if (callbackQuery.getData().contains("Quiz")){
+            output = "Sorry game \"Quiz\" at the moment is not available";
+        }
+        else {
+            output = "Your request can not currently be processed";
+        }
+
+        message.setText(output);
+
+        message.setChatId(String.valueOf(callbackQuery.getMessage().getChatId()));
+
+        return message;
+    }
+
+
+    /**
      * a method which reacts on updates and sets relevant state
      */
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
 
-        // add code and states
         if (message != null && message.hasText()) {
             if (BotStateContext.getInstance().getCurrentState()==BotStates.WEATHER_WANTED &&
                     (   !update.getMessage().getText().contains("Games") &&
                         !update.getMessage().getText().contains("FAQ") &&
                         !update.getMessage().getText().contains("Weather") &&
                         !update.getMessage().getText().contains("News")    ) ){
-                try {
-                    String weather_prompt = update.getMessage().getText();
-                    WeatherModel model = new WeatherModel();
 
+                String weather_prompt = update.getMessage().getText();
+
+                WeatherModel model = new WeatherModel();
+
+                try {
                     // if input doesn't contain a digit or is not a digit then process
                     if (!weather_prompt.matches(".*\\d.*")) {
+                        LOG.info("Preparing weather prompt of weather forecast");
+
                         sendMsg(message, Weather.getWeather(weather_prompt, model));
                     }
                     else throw new IOException("Incorrect input!");
                 } catch (IOException e) {
+                    LOG.error("Wanted prompt wasn't processed successfully due to bad input -> {}",weather_prompt);
+
                     sendMsg(message,"City was not found" + Emoji.GREY_EXCLAMATION + "\nPlease try again");
                 }finally {
+                    LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.WEATHER_DONE);
+
                     BotStateContext.getInstance().setCurrentState(BotStates.WEATHER_DONE);
                 }
             }
             else if (message.getText().contains("Games")){
-                BotStateContext.getInstance().setCurrentState(BotStates.GAMES_WANTED);
+                LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.GAMES_PROPOSITION);
+
+                // BotStateContext.getInstance().setCurrentState(BotStates.GAMES_WANTED);
 
                 try {
+                    BotStateContext.getInstance().setCurrentState(BotStates.GAMES_PROPOSITION);
+
                     sendMsgWithGameKeyboard(update.getMessage());
                 } catch (TelegramApiException exception) {
                     sendMsg(update.getMessage(),"Sorry something went wrong!");
+
+                    LOG.error("Exception -> {}",exception.getMessage());
+
                     exception.printStackTrace();
-                }finally {
+                }
+                finally {
+                    LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.WEATHER_DONE);
+
                     BotStateContext.getInstance().setCurrentState(BotStates.GAMES_DONE);
                 }
             }
             else if (message.getText().contains("FAQ")){
+                LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.FAQ_WANTED);
+
                 BotStateContext.getInstance().setCurrentState(BotStates.FAQ_WANTED);
 
                 sendMsg(update.getMessage(),BotStateContext.getInstance().chooseHandlerForActualState());
             }
             else if (message.getText().contains("Weather")){
+                LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.WEATHER_WANTED);
+
                 BotStateContext.getInstance().setCurrentState(BotStates.WEATHER_WANTED);
 
                 sendMsg(update.getMessage(),BotStateContext.getInstance().chooseHandlerForActualState());
             }
             else {
+                LOG.info("Installing new state ( from {} to {} )",BotStateContext.getInstance().getCurrentState(),BotStates.NOT_IMPLEMENTED);
+
                 BotStateContext.getInstance().setCurrentState(BotStates.NOT_IMPLEMENTED);
 
                 sendMsg(update.getMessage(),BotStateContext.getInstance().chooseHandlerForActualState());
             }
 
             BotStateContext.getInstance().checkIfStateIsFinished();
+        }
+        else if (update.hasCallbackQuery()){
+            CallbackQuery callbackQuery = update.getCallbackQuery();
+
+            BotStateContext.getInstance().setCurrentState(BotStates.INITIAL);
+
+            // logging
+            try {
+                execute(processCallbackQuery(callbackQuery));
+
+                LOG.info("Successful execution of reply callback query");
+            } catch (TelegramApiException exception) {
+                LOG.error("Failed execution of reply callback query -> {}",exception.getMessage());
+
+                exception.printStackTrace();
+            }
         }
     }
 }

@@ -2,6 +2,8 @@ package model;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,6 +13,9 @@ import java.util.Properties;
 import java.util.Scanner;
 
 public class Weather {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Weather.class);
+
     public static String getWeather(String city, WeatherModel model) throws IOException {
         // secure -> weather api
         // example -> https://samples.openweathermap.org/data/2.5/weather?q=London&appid=secure_weather_api
@@ -18,7 +23,11 @@ public class Weather {
         FileInputStream fileInputStream = new FileInputStream("src\\main\\resources\\config.properties");
         properties.load(fileInputStream);
 
+        LOG.info("Getting info from properties file");
+
         URL url = new URL("http://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=" + properties.get("my_weather_api"));
+
+        LOG.info("Getting info from weather api");
 
         Scanner scanner = new Scanner((InputStream)url.getContent());
 
@@ -27,9 +36,9 @@ public class Weather {
             outputJsonFormat.append(scanner.nextLine());
         }
 
-        // System.out.println(outputJsonFormat);
-
         JSONObject object = new JSONObject(outputJsonFormat.toString());
+
+        LOG.info("Start of handling received main json object");
 
         // index of country
         JSONObject index = object.getJSONObject("sys");

@@ -6,6 +6,7 @@ public enum BotStates {
     WEATHER_WANTED,
     FAQ_WANTED,
     GAMES_WANTED,
+    GAMES_PROPOSITION,
     WEATHER_DONE,
     GAMES_DONE,
     NEWS_DONE,
