@@ -9,5 +9,5 @@
   - Telegram API(longpolling bot,smiles,callback queries)
   - java 8, maven;
   - weather api;
-  - lombok;
+  - lombok plugin;
   - logging : slf4j and logback;
