@@ -3,7 +3,6 @@ package model;
 import com.vdurmont.emoji.EmojiParser;
 
 public class Emoji {
-
     /**
      *There are 2 ways of creating an emoji here:
      * 1 -> to use a unicode in string

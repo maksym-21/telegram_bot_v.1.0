@@ -1,8 +1,6 @@
-package handlers;
+package handlers.states;
 
-import state.Handler;
-
-public class GamesWantedHandler implements Handler {
+public class NewsWantedHandler implements state.Handler {
     @Override
     public String handle() {
         return new NotImplememtedHandler().handle();

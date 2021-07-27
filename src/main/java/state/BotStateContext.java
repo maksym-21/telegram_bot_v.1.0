@@ -1,6 +1,6 @@
 package state;
 
-import handlers.*;
+import handlers.states.*;
 import lombok.Getter;
 import lombok.Setter;
 
