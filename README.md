@@ -3,11 +3,11 @@
 * Telegram bot (on master branch), which shows a weather forecast.
 
 * Currently not on the server, so at the moment does not work 
-(but whole code is okay)
+  (but whole code is okay)
 
 * Current Stack of Used Technologies : 
-- Telegram API(longpolling bot,smiles,callback queries)
-- java 8, maven;
-- weather api;
-- lombok;
-- logging : slf4j and logback;
+  - Telegram API(longpolling bot,smiles,callback queries)
+  - java 8, maven;
+  - weather api;
+  - lombok;
+  - logging : slf4j and logback;
