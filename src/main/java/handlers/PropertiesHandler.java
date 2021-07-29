@@ -21,7 +21,7 @@ public class PropertiesHandler {
 
             return String.valueOf(properties.get(key));
         } catch (IOException e) {
-            LOG.error("Exception -> {}",e.getLocalizedMessage());
+            LOG.error("Exception -> {}",e.getMessage());
 
             return e.getMessage();
         }

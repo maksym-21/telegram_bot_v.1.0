@@ -1,6 +1,7 @@
-package model;
+package model.weather;
 
 import lombok.Setter;
+import model.Emoji;
 
 @Setter
 public class WeatherModel {

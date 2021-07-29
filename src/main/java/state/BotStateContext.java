@@ -21,7 +21,6 @@ public class BotStateContext {
         navigator.put(BotStates.INITIAL, new InitialHandler());
         navigator.put(BotStates.WEATHER_WANTED, new WeatherWantedHandler());
         navigator.put(BotStates.NEWS_WANTED, new NewsWantedHandler());
-        navigator.put(BotStates.COUNTRY_FOR_NEWS_WANTED, new CountryForNewsWantedHandler());
         navigator.put(BotStates.FAQ_WANTED, new FaqWantedHandler());
         navigator.put(BotStates.NOT_IMPLEMENTED, new NotImplememtedHandler());
         navigator.put(BotStates.GAMES_WANTED, new GamesWantedHandler());

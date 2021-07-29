@@ -1,15 +1,15 @@
-package model;
+package model.weather;
 
+import handlers.PropertiesHandler;
+import model.Emoji;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Properties;
 import java.util.Scanner;
 
 public class Weather {
@@ -19,13 +19,11 @@ public class Weather {
     public static String getWeather(String city, WeatherModel model) throws IOException {
         // secure -> weather api
         // example -> https://samples.openweathermap.org/data/2.5/weather?q=London&appid=secure_weather_api
-        Properties properties = new Properties();
-        FileInputStream fileInputStream = new FileInputStream("src\\main\\resources\\config.properties");
-        properties.load(fileInputStream);
+        String api = PropertiesHandler.getStringFromProperty("my_weather_api");
 
         LOG.info("Getting info from properties file");
 
-        URL url = new URL("http://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=" + properties.get("my_weather_api"));
+        URL url = new URL("http://api.openweathermap.org/data/2.5/weather?q=" + city + "&units=metric&appid=" + api);
 
         LOG.info("Getting info from weather api");
 

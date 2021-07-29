@@ -2,8 +2,11 @@ package config;
 
 import handlers.PropertiesHandler;
 import model.Emoji;
-import model.WeatherModel;
-import model.Weather;
+import model.news.News;
+import model.news.NewsLanguage;
+import model.news.NewsModel;
+import model.weather.WeatherModel;
+import model.weather.Weather;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -19,12 +22,20 @@ import state.BotStateContext;
 import state.BotStates;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-
+/*
+ + ?logging for something functions
+ + ?size of buttons(size and color)
+ + ?refactoring
+ */
 public class Bot extends TelegramLongPollingBot {
 
+    private String KEY_WORD_FOR_NEWS = null;
     private static final Logger LOG = LoggerFactory.getLogger(TelegramLongPollingBot.class);
 
     /**
@@ -40,7 +51,7 @@ public class Bot extends TelegramLongPollingBot {
         keyboardMarkup.setSelective(true);
 
         // adjust a scale to the number of buttons
-        //keyboardMarkup.setResizeKeyboard(true);
+        keyboardMarkup.setResizeKeyboard(true);
 
         // hide a keyboard after using a button
         keyboardMarkup.setOneTimeKeyboard(false);
@@ -48,7 +59,6 @@ public class Bot extends TelegramLongPollingBot {
         List<KeyboardRow> keyboardRowList = new ArrayList<>();
         KeyboardRow firstRow = new KeyboardRow();
         KeyboardRow secondRow = new KeyboardRow();
-        // KeyboardRow thirdRow = new KeyboardRow();
 
         firstRow.add(new KeyboardButton("Weather" + Emoji.SUNNY));
         firstRow.add(new KeyboardButton("News" + Emoji.MAIL_BOX));
@@ -94,7 +104,7 @@ public class Bot extends TelegramLongPollingBot {
     /**
      * @throws TelegramApiException -> bad execution of reply-message
      */
-    public void sendMsgWithGameKeyboard(Message message) throws TelegramApiException {
+    public void sendMsgWithKeyboard(Message message, InlineKeyboardMarkup markup) throws TelegramApiException {
         SendMessage reply = new SendMessage();
 
         reply.setChatId(String.valueOf(message.getChatId()));
@@ -107,7 +117,7 @@ public class Bot extends TelegramLongPollingBot {
 
         setButton(reply);
 
-        reply.setReplyMarkup(getInlineMarkup());
+        reply.setReplyMarkup(markup);
 
         execute(reply);
     }
@@ -116,7 +126,7 @@ public class Bot extends TelegramLongPollingBot {
     /**
      * @return Telegram inline keyboard-message
      */
-    public InlineKeyboardMarkup getInlineMarkup(){
+    public InlineKeyboardMarkup getGameInlineMarkup(){
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
 
         InlineKeyboardButton button1 = new InlineKeyboardButton();
@@ -151,6 +161,60 @@ public class Bot extends TelegramLongPollingBot {
         return inlineKeyboardMarkup;
     }
 
+    /**
+     * @return Telegram inline keyboard-message to choose a language of news
+     */
+    public InlineKeyboardMarkup getNewsLanguageInlineMarkup(){
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        InlineKeyboardButton button2 = new InlineKeyboardButton();
+        InlineKeyboardButton button3 = new InlineKeyboardButton();
+        InlineKeyboardButton button4 = new InlineKeyboardButton();
+        InlineKeyboardButton button5 = new InlineKeyboardButton();
+        InlineKeyboardButton button6 = new InlineKeyboardButton();
+
+        String var = String.valueOf(NewsLanguage.de);
+        button1.setText(var + Emoji.getFlagByCountryIndex(var));
+        var = String.valueOf(NewsLanguage.en);
+        button2.setText(var + Emoji.getFlagByCountryIndex("gb"));
+        var = String.valueOf(NewsLanguage.es);
+        button3.setText(var + Emoji.getFlagByCountryIndex(var));
+        var = String.valueOf(NewsLanguage.fr);
+        button4.setText(var + Emoji.getFlagByCountryIndex(var));
+        var = String.valueOf(NewsLanguage.ru);
+        button5.setText(var + Emoji.getFlagByCountryIndex(var));
+        var = String.valueOf(NewsLanguage.it);
+        button6.setText(var + Emoji.getFlagByCountryIndex(var));
+
+
+        // every button should have callback data or error
+        button1.setCallbackData("de");
+        button2.setCallbackData("en");
+        button3.setCallbackData("es");
+        button4.setCallbackData("fr");
+        button5.setCallbackData("ru");
+        button6.setCallbackData("it");
+
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        row1.add(button1);
+        row1.add(button2);
+        row1.add(button3);
+
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
+        row2.add(button4);
+        row2.add(button5);
+        row2.add(button6);
+
+        List<List<InlineKeyboardButton>> lists = new ArrayList<>();
+        lists.add(row1);
+        lists.add(row2);
+
+        inlineKeyboardMarkup.setKeyboard(lists);
+
+        return inlineKeyboardMarkup;
+    }
+
 
     /**
      * @return username of bot
@@ -170,11 +234,11 @@ public class Bot extends TelegramLongPollingBot {
 
     /**
      * @param callbackQuery -> returned value from inline keyboard
-     * @return -> message reply on user's selected value
      */
-    public SendMessage processCallbackQuery(CallbackQuery callbackQuery){
+    public void processCallbackQuery(CallbackQuery callbackQuery) throws TelegramApiException, IOException, RuntimeException {
         SendMessage message = new SendMessage();
         String output;
+        boolean flag = false;
 
         if (callbackQuery.getData().contains("Snake")){
             output = "Sorry game \"Snake\" at the moment is not available";
@@ -188,20 +252,65 @@ public class Bot extends TelegramLongPollingBot {
         else if (callbackQuery.getData().contains("Quiz")){
             output = "Sorry game \"Quiz\" at the moment is not available";
         }
+        else if (callbackQuery.getData().contains("de") ||
+                callbackQuery.getData().contains("en") ||
+                callbackQuery.getData().contains("es") ||
+                callbackQuery.getData().contains("fr") ||
+                callbackQuery.getData().contains("ru") ||
+                callbackQuery.getData().contains("it")){
+
+            flag = true;
+            output = null;
+            // message.setText(output);
+            //message.setChatId(String.valueOf(callbackQuery.getMessage().getChatId()));
+
+
+            NewsLanguage language = NewsLanguage.valueOf(callbackQuery.getData().substring(0,2));
+            String date = Bot.getCurrentDate();
+            String chatID = String.valueOf(callbackQuery.getMessage().getChatId());
+
+            if (KEY_WORD_FOR_NEWS!=null) {
+                sendAndEXeCUTeXAllNewsFromArray(News.getNews(KEY_WORD_FOR_NEWS,date,language),chatID);
+            }
+            else throw new RuntimeException();
+        }
         else {
             output = "Your request can not currently be processed";
         }
 
-        message.setText(output);
 
-        message.setChatId(String.valueOf(callbackQuery.getMessage().getChatId()));
+        if (!flag) {
+            message.setText(output);
+            message.setChatId(String.valueOf(callbackQuery.getMessage().getChatId()));
 
-        return message;
+            execute(message);
+        }
     }
 
+    /**
+     * @return date of current day for the news
+     */
+    public static String getCurrentDate(){
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        return dateFormat.format(new Date());
+    }
+
+    private void sendAndEXeCUTeXAllNewsFromArray(ArrayList<NewsModel> arrayList,String chatID) throws TelegramApiException {
+        for (NewsModel news : arrayList) {
+            SendMessage sendMessage = new SendMessage();
+
+            sendMessage.setText(news.toString());
+            sendMessage.setChatId(chatID);
+
+            execute(sendMessage);
+
+            LOG.info("Successful execution of news #" + news.getHashId());
+        }
+    }
 
     /**
-     * a method which reacts on updates and sets relevant state
+     * a main method which reacts on updates and sets relevant state for our bot
      */
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
@@ -235,21 +344,44 @@ public class Bot extends TelegramLongPollingBot {
                     BotStateContext.getInstance().setCurrentState(BotStates.WEATHER_DONE);
                 }
             }
-            else if (message.getText().contains("Games")){
-                LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.GAMES_PROPOSITION);
+            else if (BotStateContext.getInstance().getCurrentState()==BotStates.NEWS_WANTED &&
+                    (!update.getMessage().getText().contains("Games") &&
+                     !update.getMessage().getText().contains("FAQ") &&
+                     !update.getMessage().getText().contains("Weather") &&
+                     !update.getMessage().getText().contains("News")    )){
 
-                // BotStateContext.getInstance().setCurrentState(BotStates.GAMES_WANTED);
+                /*
+                 *  ? -> show how many news were found
+                 */
+
+                LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.NEWS_DONE);
+
+                KEY_WORD_FOR_NEWS = update.getMessage().getText();
 
                 try {
-                    BotStateContext.getInstance().setCurrentState(BotStates.GAMES_PROPOSITION);
-
-                    sendMsgWithGameKeyboard(update.getMessage());
+                    sendMsgWithKeyboard(update.getMessage(),getNewsLanguageInlineMarkup());
                 } catch (TelegramApiException exception) {
                     sendMsg(update.getMessage(),"Sorry something went wrong!");
 
                     LOG.error("Exception -> {}",exception.getMessage());
+                }
+                finally {
+                    LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.GAMES_DONE);
 
-                    exception.printStackTrace();
+                    BotStateContext.getInstance().setCurrentState(BotStates.GAMES_DONE);
+                }
+            }
+            else if (message.getText().contains("Games")){
+                LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.GAMES_PROPOSITION);
+
+                try {
+                    BotStateContext.getInstance().setCurrentState(BotStates.GAMES_PROPOSITION);
+
+                    sendMsgWithKeyboard(update.getMessage(),getGameInlineMarkup());
+                } catch (TelegramApiException exception) {
+                    sendMsg(update.getMessage(),"Sorry something went wrong!");
+
+                    LOG.error("Exception -> {}",exception.getMessage());
                 }
                 finally {
                     LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.WEATHER_DONE);
@@ -271,6 +403,13 @@ public class Bot extends TelegramLongPollingBot {
 
                 sendMsg(update.getMessage(),BotStateContext.getInstance().chooseHandlerForActualState());
             }
+            else if (message.getText().contains("News")){
+                LOG.info("Switching to other state from {} to {}",BotStateContext.getInstance().getCurrentState(),BotStates.NEWS_WANTED);
+
+                BotStateContext.getInstance().setCurrentState(BotStates.NEWS_WANTED);
+
+                sendMsg(update.getMessage(),BotStateContext.getInstance().chooseHandlerForActualState());
+            }
             else {
                 LOG.info("Installing new state ( from {} to {} )",BotStateContext.getInstance().getCurrentState(),BotStates.NOT_IMPLEMENTED);
 
@@ -286,16 +425,20 @@ public class Bot extends TelegramLongPollingBot {
 
             BotStateContext.getInstance().setCurrentState(BotStates.INITIAL);
 
-            // logging
             try {
-                execute(processCallbackQuery(callbackQuery));
+                processCallbackQuery(callbackQuery);
 
                 LOG.info("Successful execution of reply callback query");
-            } catch (TelegramApiException exception) {
-                LOG.error("Failed execution of reply callback query -> {}",exception.getMessage());
-
-                exception.printStackTrace();
             }
+             catch (TelegramApiException exception) {
+                LOG.error("Failed execution of reply callback query -> {}",exception.getMessage());
+             }
+             catch (RuntimeException exception){
+                LOG.error("String KEY_WORD_FOR_NEWS (value -> {}) is null -> {}", KEY_WORD_FOR_NEWS,exception.getMessage());
+             }
+             catch (IOException exception){
+                LOG.error("Problem with API News.getNews() -> {}",exception.getMessage());
+             }
         }
     }
 }
